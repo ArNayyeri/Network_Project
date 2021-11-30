@@ -2,7 +2,6 @@ import server
 import threading
 import yaml
 import requests
-
 from serverInfo import serverInfo
 
 
@@ -18,9 +17,8 @@ def check_for_request():
                 find_port(text[8:])
 
 
-def find_port(filename, filenode=None):
-    if filenode is None:
-        filenode = find_filenode(filename)
+def find_port(filename):
+    filenode = find_filenode(filename)
     for i in serverInfo.config['friend_nodes']:
         if i['node_name'] == filenode:
             query = {'filename': filename, 'port': serverInfo.port}
@@ -30,7 +28,7 @@ def find_port(filename, filenode=None):
     result = requests.get('http://127.0.0.1:' + str(serverInfo.config['friend_nodes'][0]['node_port']) + '/getport/',
                           params=query)
     query = {'filename': filename, 'port': serverInfo.port}
-    requests.get('http://127.0.0.1:' + str(result.port) + '/getfile/', params=query)
+    requests.get('http://127.0.0.1:' + result.text + '/getfile/', params=query)
 
 
 def find_filenode(filename):
