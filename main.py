@@ -1,3 +1,4 @@
+import json
 import server
 import threading
 import yaml
@@ -24,9 +25,12 @@ def find_port(filename):
             query = {'filename': filename, 'port': serverInfo.port}
             requests.get('http://127.0.0.1:' + str(i['node_port']) + '/getfile/', params=query)
             return
-    query = {'filenode': filenode}
+    query = {'filenode': filenode, 'source_port': json.dumps([serverInfo.port])}
     result = requests.get('http://127.0.0.1:' + str(serverInfo.config['friend_nodes'][0]['node_port']) + '/getport/',
                           params=query)
+    if result.text == 'not found':
+        print('File not found')
+        return
     query = {'filename': filename, 'port': serverInfo.port}
     requests.get('http://127.0.0.1:' + result.text + '/getfile/', params=query)
 

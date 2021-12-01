@@ -1,3 +1,4 @@
+import json
 import shutil
 import uvicorn
 from fastapi import FastAPI, File, UploadFile
@@ -8,21 +9,24 @@ app = FastAPI()
 
 
 @app.get("/getport/")
-def get_port_node(filenode: int, source_port: int = None):
+def get_port_node(filenode: int, source_port: str):
     print('get port called')
     serverInfo.config['friend_nodes'].sort(key=lambda n: abs(n['node_name'] - serverInfo.port))
     for i in serverInfo.config['friend_nodes']:
         if i['node_name'] == filenode:
             return i['node_port']
-    query = {'filenode': filenode, 'source_port': serverInfo.port}
-    if serverInfo.config['friend_nodes'][0]['node_port'] != source_port:
-        result = requests.get(
-            'http://127.0.0.1:' + str(serverInfo.config['friend_nodes'][0]['node_port']) + '/getport/',
-            params=query)
-    else:
-        result = requests.get(
-            'http://127.0.0.1:' + str(serverInfo.config['friend_nodes'][1]['node_port']) + '/getport/',
-            params=query)
+    source_port = json.loads(source_port)
+    source_port.append(serverInfo.port)
+    query = {'filenode': filenode, 'source_port': json.dumps(source_port)}
+    result = None
+    for i in serverInfo.config['friend_nodes']:
+        if not source_port.__contains__(i['node_port']):
+            result = requests.get('http://127.0.0.1:' + str(i['node_port']) + '/getport/', params=query)
+            break
+    if result is None:
+        return 'not found'
+    if result.text == 'not found':
+        return 'not found'
     return result.text
 
 
