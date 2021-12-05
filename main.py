@@ -20,6 +20,9 @@ def check_for_request():
 
 def find_port(filename):
     filenode = find_filenode(filename)
+    if filenode == 'not found':
+        print('File not found')
+        return
     for i in serverInfo.config['friend_nodes']:
         if i['node_name'] == filenode:
             query = {'filename': filename, 'port': serverInfo.port}
@@ -40,6 +43,7 @@ def find_filenode(filename):
         for j in i['node_files']:
             if j == filename:
                 return i['node_name']
+    return 'not found'
 
 
 if __name__ == '__main__':
